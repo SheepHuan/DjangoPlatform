@@ -3,13 +3,10 @@ from .models import BenchmarkCase, HardwareDevice
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from django import forms
+from .models import HARDWARE_DEVICE_TYPE,FRAMEWORK_TYPE
 # https://juejin.cn/post/7128187234099920927
 
-FRAMEWORK_TYPE=[
-    (0,'Tensorflow Lite'),
-    (1,'Paddle Lite'),
-    (2,'Onnxrunime')
-]
+
 
 HARDWARE_DEVICE=[
     (0,'Android 0'),
@@ -17,16 +14,13 @@ HARDWARE_DEVICE=[
     (2,'Android 3')
 ]
 
-HARDWARE_DEVICE_TYPE = [
-    (0,'Android'),
-    (1,'Linux DevBorad'),
-]
+
 
 class HardwareDeviceForm(ModelForm):
     hardware_device_type = forms.ChoiceField(choices=HARDWARE_DEVICE_TYPE, label='Hardware Device Type', initial=1)
     address = forms.CharField(label='Address', max_length=128)
-    ssh_username = forms.CharField(label='SSH Username', max_length=128)
-    ssh_password = forms.CharField(label='SSH Password', max_length=128)
+    ssh_username = forms.CharField(label='SSH Username', max_length=128,required=False)
+    ssh_password = forms.CharField(label='SSH Password', max_length=128,required=False)
     class Meta:
         model = HardwareDevice
         fields = ('device_name','description' )
@@ -54,6 +48,11 @@ class HardwareDeviceForm(ModelForm):
             Submit('submit', 'Submit', css_class='btn btn-primary'),
         )
 
+    def clean_ssh_username(self):
+        ssh_username = self.cleaned_data['ssh_username']
+        if not ssh_username and self.cleaned_data['hardware_device_type'] == 1:
+            raise forms.ValidationError('SSH Username is required')
+        return ssh_username
 
 class BenchmarkCaseForm(ModelForm):
     framework_type = forms.ChoiceField(choices=FRAMEWORK_TYPE, label='Framework Type', initial=0)
@@ -79,7 +78,6 @@ class BenchmarkCaseForm(ModelForm):
                                                      'placeholder': 'Profile Model'}),
         }
 
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
