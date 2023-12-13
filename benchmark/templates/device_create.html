@@ -1,0 +1,21 @@
+{% extends 'base.html' %} {% block content %} {% load crispy_forms_tags %}
+<form method="post" action=".">
+  {% csrf_token %} {{ form|crispy }}
+  <input type="submit" class="btn btn-success" value="Submit" />
+</form>
+<script>
+  var dTypeField = document.getElementById("id_hardware_device_type");
+  var usernameField = document.getElementById("id_ssh_username");
+  var passwordField = document.getElementById("id_ssh_password");
+  dTypeField.addEventListener("change", function () {
+    <!-- console.log(dTypeField.value); -->
+    if (dTypeField.value == 0) {
+      usernameField.disabled = true;
+      passwordField.disabled = true;
+    } else {
+      usernameField.disabled = false;
+      passwordField.disabled = false;
+    }
+  });
+</script>
+{% endblock %}

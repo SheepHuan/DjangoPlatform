@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import BenchmarkCase
+from .models import BenchmarkCase, HardwareDevice
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from django import forms
@@ -17,13 +17,51 @@ HARDWARE_DEVICE=[
     (2,'Android 3')
 ]
 
+HARDWARE_DEVICE_TYPE = [
+    (0,'Android'),
+    (1,'Linux DevBorad'),
+]
+
+class HardwareDeviceForm(ModelForm):
+    hardware_device_type = forms.ChoiceField(choices=HARDWARE_DEVICE_TYPE, label='Hardware Device Type', initial=1)
+    address = forms.CharField(label='Address', max_length=128)
+    ssh_username = forms.CharField(label='SSH Username', max_length=128)
+    ssh_password = forms.CharField(label='SSH Password', max_length=128)
+    class Meta:
+        model = HardwareDevice
+        fields = ('device_name','description' )
+        
+        labels = {
+            'device_name': 'Device Name',  
+            'description': 'Description',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.fields['description'].required = False
+        self.helper.layout = Layout(
+            'device_name',   
+            Row(
+                Column('hardware_device_type', css_class='form-group col-md-6 mb-0'),
+                Column('address', css_class='form-group col-md-6 mb-0'),
+            ),
+             Row(
+                Column('ssh_username', css_class='form-group col-md-6 mb-0'),
+                Column('ssh_password', css_class='form-group col-md-6 mb-0'),
+            ),
+            'description',
+            Submit('submit', 'Submit', css_class='btn btn-primary'),
+        )
+
+
 class BenchmarkCaseForm(ModelForm):
     framework_type = forms.ChoiceField(choices=FRAMEWORK_TYPE, label='Framework Type', initial=0)
     hardware_device = forms.ChoiceField(choices=HARDWARE_DEVICE, label='Hardware Device', initial=0)
     
     class Meta:
         model = BenchmarkCase
-        fields = ('case_name',  'profile_model','description',)
+        fields = ('case_name', 'profile_model','description',)
         
         labels = {
             'case_name': 'Case Name',
@@ -45,6 +83,7 @@ class BenchmarkCaseForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        self.fields['description'].required = False
         self.helper.layout = Layout(
             'case_name',
             Row(
@@ -53,4 +92,5 @@ class BenchmarkCaseForm(ModelForm):
             ),
             'profile_model',
             'description',
+            Submit('submit', 'Submit', css_class='btn btn-primary'),
         )
